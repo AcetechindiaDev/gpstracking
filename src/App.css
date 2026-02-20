@@ -1,0 +1,154 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================
+   VEHICLE TRACKING ANIMATIONS
+========================================== */
+
+/* ✅ Polyline Animation - Dashed flowing effect */
+@keyframes polyline-flow {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -20px;
+  }
+}
+
+/* ✅ Marker Pulse Animation - Active vehicle indicator */
+@keyframes marker-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ✅ Marker Bounce - Moving vehicle indicator */
+@keyframes marker-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* ✅ Polyline Glow - Directional glow effect */
+@keyframes polyline-glow {
+  0% {
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.5));
+  }
+  100% {
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0));
+  }
+}
+
+/* ✅ Direction Arrow Animation - Shows vehicle direction */
+@keyframes direction-arrow {
+  0% {
+    transform: translateX(-8px);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(8px);
+    opacity: 0.5;
+  }
+}
+
+/* ✅ Vehicle Marker Animation - Active moving vehicle */
+.vehicle-marker-moving {
+  animation: marker-pulse 1.5s ease-in-out infinite;
+}
+
+.vehicle-marker-active {
+  animation: marker-bounce 1s ease-in-out infinite;
+}
+
+/* ✅ Polyline Animated Style */
+.polyline-animated {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 0;
+  animation: polyline-flow 2s linear infinite, polyline-glow 2s ease-in-out infinite;
+}
+
+/* ✅ Direction Indicator */
+.direction-indicator {
+  animation: direction-arrow 1.5s ease-in-out infinite;
+}
+
+/* ✅ Moving Vehicle Label Animation */
+.vehicle-label-moving {
+  animation: marker-pulse 1.5s ease-in-out infinite;
+}
+
+/* ✅ Vehicle Speed Badge Animation */
+.speed-badge {
+  animation: marker-bounce 1s ease-in-out infinite;
+}
+
+/* ==========================================
+   RESPONSIVE ANIMATIONS
+========================================== */
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .vehicle-marker-moving,
+  .vehicle-marker-active,
+  .polyline-animated,
+  .direction-indicator,
+  .vehicle-label-moving,
+  .speed-badge {
+    animation: none;
+  }
+}
