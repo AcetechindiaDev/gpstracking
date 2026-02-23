@@ -1929,14 +1929,14 @@ useEffect(() => {
   //  return arr.filter((v) => getSource(v) === selectedVendor);
 
   // // }, [allVehicles, selectedVendor]);
-
   // }, [allVehicles, effVendor]);
 
   const visibleVehiclesVendorOnly = useMemo(() => {
   const arr = Array.isArray(allVehicles) ? allVehicles : [];
   if (selectedVendor === "all") return arr;
   return arr.filter((v) => getSource(v) === selectedVendor);
-}, [allVehicles, selectedVendor]);
+// }, [allVehicles, selectedVendor]);
+}, [allVehicles.length, selectedVendor]);
 
 
   // ✅ IMPORTANT: deferred to avoid cancel loop during polling
@@ -2320,7 +2320,9 @@ const vehiclesToRender = useMemo(
 //   return visibleVehiclesDeduped.length >= 80;
 // return visibleVehiclesDeduped.length >= 30;
 
-  return visibleVehiclesDeduped.length >= 150; // or 200
+  // return visibleVehiclesDeduped.length >= 150; // or 200
+
+  return visibleVehiclesDeduped.length >= 100;
 
   
 }, [visibleVehiclesDeduped.length]);
@@ -2719,14 +2721,25 @@ const allVehiclePolylines = useMemo(() => {
   }
 
   return out;
-}, [
+},
+//  [
+//   showLines,
+//   denseMode,
+//   isHistoryMode,
+//   effectiveShowAllPolylines,
+//   vehiclesToRender,
+//   tracksBySource,
+//   activeVehicle,
+// ]);
+
+ [
   showLines,
   denseMode,
   isHistoryMode,
   effectiveShowAllPolylines,
   vehiclesToRender,
-  tracksBySource,
   activeVehicle,
+  trackTick
 ]);
 
 

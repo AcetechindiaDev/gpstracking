@@ -696,10 +696,18 @@ export const fetchJtrack = createAsyncThunk(
     try {
       const url = which === 1 ? JTRACK_LIVE_URL_1 : JTRACK_LIVE_URL_2;
 
-      const res = await axios.get(withBuster(url), {
-        headers: { Accept: "application/json", ...noCacheHeaders },
-        timeout: 15000,
-      });
+      // const res = await axios.get(withBuster(url), {
+      //   headers: { Accept: "application/json", ...noCacheHeaders },
+      //   timeout: 15000,
+      // });
+
+      
+      const res = await axios.get(url, {
+    headers: { Accept: "application/json" },
+    // timeout: 15000,
+    timeout: which === 2 ? 30000 : 15000,
+    });
+
 
       const json = res.data;
 
@@ -736,17 +744,32 @@ export const fetchJtrack = createAsyncThunk(
                 item.vehicleType ??
                 "-";
 
-          let zoneValue = "-";
-          if (which === 1) {
-            if (branchNameNormZone !== "-") zoneValue = branchNameNormZone;
-            else if (normalizeZoneText(nmoMeta?.zoneNo) !== "-")
-              zoneValue = normalizeZoneText(nmoMeta?.zoneNo);
-            else if (normalizeZoneText(masterMeta?.zoneNo) !== "-")
-              zoneValue = normalizeZoneText(masterMeta?.zoneNo);
-            else zoneValue = normalizeZoneText(item.zoneNo ?? item.zone ?? "-");
-          } else {
-            zoneValue = normalizeZoneText(item.zoneNo ?? item.zone ?? "-");
-          }
+          // let zoneValue = "-";
+          // if (which === 1) {
+          //   if (branchNameNormZone !== "-") zoneValue = branchNameNormZone;
+          //   else if (normalizeZoneText(nmoMeta?.zoneNo) !== "-")
+          //     zoneValue = normalizeZoneText(nmoMeta?.zoneNo);
+          //   else if (normalizeZoneText(masterMeta?.zoneNo) !== "-")
+          //     zoneValue = normalizeZoneText(masterMeta?.zoneNo);
+          //   else zoneValue = normalizeZoneText(item.zoneNo ?? item.zone ?? "-");
+          // } else {
+          //   zoneValue = normalizeZoneText(item.zoneNo ?? item.zone ?? "-");
+          // }
+
+    let zoneValue = "-";
+
+if (which === 1) {
+  if (branchNameNormZone !== "-") zoneValue = branchNameNormZone;
+  else if (normalizeZoneText(nmoMeta?.zoneNo) !== "-")
+    zoneValue = normalizeZoneText(nmoMeta?.zoneNo);
+  else if (normalizeZoneText(masterMeta?.zoneNo) !== "-")
+    zoneValue = normalizeZoneText(masterMeta?.zoneNo);
+  else zoneValue = normalizeZoneText(item.zoneNo ?? item.zone ?? "-");
+} else {
+  // JTRACK-2: minimal processing for speed
+  zoneValue = item.zoneNo ?? item.zone ?? "-";
+}
+
 
           const base = {
             id: baseId,
@@ -774,13 +797,35 @@ export const fetchJtrack = createAsyncThunk(
         })
         .filter(Boolean);
 
-      dispatch(ingestVehicleSamples({ source, vehicles: mapped }));
-      return { source, vehicles: mapped };
+      // dispatch(ingestVehicleSamples({ source, vehicles: mapped }));
+      // return { source, vehicles: mapped };
+
+        const existing = getState().vehicles.entities;
+
+const filtered = mapped.filter((v) => {
+  const old = existing[v.uid];
+  if (!old) return true;
+
+  // Update only if position or time changed
+  return (
+    old.lat !== v.lat ||
+    old.lng !== v.lng ||
+    old.speed !== v.speed ||
+    old.gps_datetime !== v.gps_datetime
+  );
+});
+
+dispatch(ingestVehicleSamples({ source, vehicles: filtered }));
+return { source, vehicles: filtered };
+
     } catch (e) {
       return rejectWithValue(e?.response?.data?.message || e?.message || "JTrack failed");
     }
   }
 );
+
+
+
 
 /* ✅ Batch Live */
 export const fetchBatchLive = createAsyncThunk(
@@ -1342,7 +1387,9 @@ export const fetchVamosysLive = createAsyncThunk(
 let _seqTimer = null;
 let _seqRunning = false;
 
-const SEQ_DELAY_MS = 10 * 1000; // 10s gap between each API call
+// const SEQ_DELAY_MS = 10 * 1000; // 10s gap between each API call
+
+const SEQ_DELAY_MS = 3000; // faster rotation
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -1386,24 +1433,39 @@ export const startPolling = createAsyncThunk(
     // ✅ Sequential loop forever (10s gap)
     _seqRunning = true;
 
+    // const jobs = [
+    //   () => dispatch(fetchJtrack({ which: 1 })),
+    //   () => dispatch(fetchJtrack({ which: 2 })),
+
+    //   () => dispatch(fetchBatchLive()),
+    //   () => dispatch(fetchBatchHealth()),
+
+    //   () => dispatch(fetchVecvLive()),
+    //   () => dispatch(fetchGpsTrackLive()),
+    //   () => dispatch(fetchIalert2Live()),
+    //   () => dispatch(fetchFleetxLive()),
+    //   () => dispatch(fetchVamosysLive()),
+
+    //   // ✅ masters (keep at end, less important)
+    //   () => dispatch(fetchBatchMaster()),
+    //   () => dispatch(fetchJtrack1ZoneMaster()),
+    //   () => dispatch(fetchJtrack1Nmo()),
+    // ];
+
     const jobs = [
-      () => dispatch(fetchJtrack({ which: 1 })),
-      () => dispatch(fetchJtrack({ which: 2 })),
+  () => dispatch(fetchJtrack({ which: 1 })),
+  () => dispatch(fetchJtrack({ which: 2 })),
 
-      () => dispatch(fetchBatchLive()),
-      () => dispatch(fetchBatchHealth()),
+  () => dispatch(fetchBatchLive()),
+  () => dispatch(fetchBatchHealth()),
 
-      () => dispatch(fetchVecvLive()),
-      () => dispatch(fetchGpsTrackLive()),
-      () => dispatch(fetchIalert2Live()),
-      () => dispatch(fetchFleetxLive()),
-      () => dispatch(fetchVamosysLive()),
+  () => dispatch(fetchVecvLive()),
+  () => dispatch(fetchGpsTrackLive()),
+  () => dispatch(fetchIalert2Live()),
+  () => dispatch(fetchFleetxLive()),
+  () => dispatch(fetchVamosysLive()),
+];
 
-      // ✅ masters (keep at end, less important)
-      () => dispatch(fetchBatchMaster()),
-      () => dispatch(fetchJtrack1ZoneMaster()),
-      () => dispatch(fetchJtrack1Nmo()),
-    ];
 
     let idx = 0;
 
